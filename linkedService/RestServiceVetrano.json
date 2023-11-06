@@ -1,0 +1,12 @@
+{
+	"name": "RestServiceVetrano",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=BBDC4.SA&apikey=2OU1FT2UZ5DKYGQG",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}

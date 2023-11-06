@@ -15,6 +15,15 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
 					"sink": {
 						"type": "JsonSink",
 						"storeSettings": {
@@ -26,6 +35,22 @@
 					},
 					"enableStaging": false
 				},
+				"inputs": [
+					{
+						"referenceName": "RestResourceVetrano",
+						"type": "DatasetReference",
+						"parameters": {
+							"apikey": {
+								"value": "@pipeline().parameters.apikey",
+								"type": "Expression"
+							},
+							"ticket": {
+								"value": "@variables('tickets')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
 				"outputs": [
 					{
 						"referenceName": "Jsonvetrano",
@@ -51,10 +76,16 @@
 			},
 			"apikey": {
 				"type": "string",
-				"defaultValue": "@linkedService(\\\"kvvetranomastercloud\\\").secret.alphavantagekey\\"
+				"defaultValue": "@linkedService(\\\"kvvetranomastercloud\\\").secret.polygon\\"
 			},
 			"camada_3": {
 				"type": "string"
+			}
+		},
+		"variables": {
+			"tickets": {
+				"type": "String",
+				"defaultValue": "AAPL"
 			}
 		},
 		"folder": {

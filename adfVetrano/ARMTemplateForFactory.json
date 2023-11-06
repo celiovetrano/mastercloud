@@ -1,0 +1,727 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfVetrano"
+		},
+		"AzureBlobStorageVetrano_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorageVetrano'"
+		},
+		"AzureSqlDatabaseVetrano_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseVetrano'"
+		},
+		"RestServiceVetrano_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.polygon.io/"
+		},
+		"kvvetranomastercloud_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kvvetranomastercloud.vault.azure.net/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/CopiaCSVparaSQL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copia do StorageAccount para AzureSQL",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 1,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"logSettings": {
+								"enableCopyActivityLog": true,
+								"copyActivityLogSettings": {
+									"logLevel": "Warning",
+									"enableReliableLogging": false
+								},
+								"logLocationSettings": {
+									"linkedServiceName": {
+										"referenceName": "AzureBlobStorageVetrano",
+										"type": "LinkedServiceReference"
+									}
+								}
+							},
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AirbnbData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AirbnbSql",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Prática01"
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-11-01T19:59:29Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AirbnbData')]",
+				"[concat(variables('factoryId'), '/datasets/AirbnbSql')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageVetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/For_Loop')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('tickets')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:01:40",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "JsonSink",
+											"storeSettings": {
+												"type": "AzureBlobStorageWriteSettings"
+											},
+											"formatSettings": {
+												"type": "JsonWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "RestResourceVetrano",
+											"type": "DatasetReference",
+											"parameters": {
+												"apikey": {
+													"value": "@pipeline().parameters.apikey",
+													"type": "Expression"
+												},
+												"ticket": {
+													"value": "@item()",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "Jsonvetrano",
+											"type": "DatasetReference",
+											"parameters": {
+												"camada": {
+													"value": "@concat(pipeline().parameters.camada_1)",
+													"type": "Expression"
+												},
+												"ticket": {
+													"value": "@item()",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"camada_1": {
+						"type": "string",
+						"defaultValue": "bruto"
+					},
+					"camada_2": {
+						"type": "string",
+						"defaultValue": "refinado"
+					},
+					"apikey": {
+						"type": "string",
+						"defaultValue": "YeLJjDMr8LFD7plQfCkbWqAJsmGHxSv3"
+					}
+				},
+				"variables": {
+					"tickets": {
+						"type": "Array",
+						"defaultValue": [
+							"AAPL",
+							"MSFT"
+						]
+					}
+				},
+				"folder": {
+					"name": "Prática02"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RestResourceVetrano')]",
+				"[concat(variables('factoryId'), '/datasets/Jsonvetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "RestResourceVetrano",
+								"type": "DatasetReference",
+								"parameters": {
+									"apikey": {
+										"value": "@pipeline().parameters.apikey",
+										"type": "Expression"
+									},
+									"ticket": {
+										"value": "@variables('tickets')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Jsonvetrano",
+								"type": "DatasetReference",
+								"parameters": {
+									"camada": {
+										"value": "@concat(pipeline().parameters.camada_1)",
+										"type": "Expression"
+									},
+									"ticket": {
+										"value": "@variables('tickets')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"camada_1": {
+						"type": "string",
+						"defaultValue": "bruto"
+					},
+					"camada_2": {
+						"type": "string",
+						"defaultValue": "refinado"
+					},
+					"apikey": {
+						"type": "string",
+						"defaultValue": "YeLJjDMr8LFD7plQfCkbWqAJsmGHxSv3"
+					},
+					"camada_3": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"tickets": {
+						"type": "String",
+						"defaultValue": "AAPL"
+					}
+				},
+				"folder": {
+					"name": "Prática02"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RestResourceVetrano')]",
+				"[concat(variables('factoryId'), '/datasets/Jsonvetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AirbnbData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageVetrano",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Prática01"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "data.csv",
+						"container": "datafactory"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "date",
+						"type": "String"
+					},
+					{
+						"name": "price",
+						"type": "String"
+					},
+					{
+						"name": "bedrooms",
+						"type": "String"
+					},
+					{
+						"name": "bathrooms",
+						"type": "String"
+					},
+					{
+						"name": "sqft_living",
+						"type": "String"
+					},
+					{
+						"name": "sqft_lot",
+						"type": "String"
+					},
+					{
+						"name": "floors",
+						"type": "String"
+					},
+					{
+						"name": "waterfront",
+						"type": "String"
+					},
+					{
+						"name": "view",
+						"type": "String"
+					},
+					{
+						"name": "condition",
+						"type": "String"
+					},
+					{
+						"name": "sqft_above",
+						"type": "String"
+					},
+					{
+						"name": "sqft_basement",
+						"type": "String"
+					},
+					{
+						"name": "yr_built",
+						"type": "String"
+					},
+					{
+						"name": "yr_renovated",
+						"type": "String"
+					},
+					{
+						"name": "street",
+						"type": "String"
+					},
+					{
+						"name": "city",
+						"type": "String"
+					},
+					{
+						"name": "statezip",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageVetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AirbnbSql')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseVetrano",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Prática01"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "date",
+						"type": "text"
+					},
+					{
+						"name": "price",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "bedrooms",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "bathrooms",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "sqft_living",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "sqft_lot",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "floors",
+						"type": "float",
+						"precision": 15
+					},
+					{
+						"name": "waterfront",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "view",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "condition",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "sqft_above",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "sqft_basement",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "yr_built",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "yr_renovated",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "street",
+						"type": "text"
+					},
+					{
+						"name": "city",
+						"type": "text"
+					},
+					{
+						"name": "statezip",
+						"type": "text"
+					},
+					{
+						"name": "country",
+						"type": "text"
+					}
+				],
+				"typeProperties": {
+					"schema": "airbnb",
+					"table": "data"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseVetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Jsonvetrano')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorageVetrano",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"camada": {
+						"type": "string"
+					},
+					"ticket": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Prática02"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@concat(dataset().ticket, '_', utcNow(), '.json')",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(dataset().camada)",
+							"type": "Expression"
+						},
+						"container": "alphavantage"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorageVetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestResourceVetrano')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "RestServiceVetrano",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"apikey": {
+						"type": "string"
+					},
+					"ticket": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Prática02"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat(\n    'v2/aggs/ticker/',\n    dataset().ticket,\n    '/range/1/day/2023-01-09/2023-01-09?apiKey=',\n    dataset().apikey\n)",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/RestServiceVetrano')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorageVetrano')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexão com me storage",
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorageVetrano_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabaseVetrano')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexão com o SQL",
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSqlDatabaseVetrano_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "integrationRuntime1",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntime1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestServiceVetrano')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('RestServiceVetrano_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/kvvetranomastercloud')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('kvvetranomastercloud_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/integrationRuntime1')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "East US",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false,
+							"customProperties": []
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

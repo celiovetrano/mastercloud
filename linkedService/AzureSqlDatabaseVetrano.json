@@ -7,7 +7,11 @@
 		"type": "AzureSqlDatabase",
 		"typeProperties": {
 			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=vetrano.database.windows.net;initial catalog=dbtrilha03-vetrano;user id=adminvetrano",
-			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDcyODU5QkJGLUY2OTctNEY0Ri05MTU1LUYyQkIzODhCRTI4MF9lMjJlZGM3Mi1mZmYwLTQzNjAtOTE5MC1mZjkyMWI0NzJmYmEiDQp9"
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDcyODU5QkJGLUY2OTctNEY0Ri05MTU1LUYyQkIzODhCRTI4MF85MTEwNWRlZC1kZTRiLTQ2NDUtODY1Ni03MTk1ZmU5ZGJmYTkiDQp9"
+		},
+		"connectVia": {
+			"referenceName": "integrationRuntime1",
+			"type": "IntegrationRuntimeReference"
 		}
 	}
 }

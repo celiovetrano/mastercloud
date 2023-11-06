@@ -1,0 +1,65 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"outputs": [
+					{
+						"referenceName": "Jsonvetrano",
+						"type": "DatasetReference",
+						"parameters": {
+							"camada": {
+								"value": "@concat(pipeline().parameters.camada_1)",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"camada_1": {
+				"type": "string",
+				"defaultValue": "bruto"
+			},
+			"camada_2": {
+				"type": "string",
+				"defaultValue": "refinado"
+			},
+			"apikey": {
+				"type": "string",
+				"defaultValue": "@linkedService(\\\"kvvetranomastercloud\\\").secret.alphavantagekey\\"
+			},
+			"camada_3": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Prática02"
+		},
+		"annotations": []
+	}
+}

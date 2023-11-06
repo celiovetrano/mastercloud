@@ -59,6 +59,10 @@
 							"camada": {
 								"value": "@concat(pipeline().parameters.camada_1)",
 								"type": "Expression"
+							},
+							"ticket": {
+								"value": "@variables('tickets')",
+								"type": "Expression"
 							}
 						}
 					}

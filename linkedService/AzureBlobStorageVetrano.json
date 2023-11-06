@@ -7,7 +7,7 @@
 		"type": "AzureBlobStorage",
 		"typeProperties": {
 			"connectionString": "DefaultEndpointsProtocol=https;AccountName=samastercloudvetrano;EndpointSuffix=core.windows.net;",
-			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDI2RUFCMjQ1LUJBNzItNENFMy1BRjM5LUExNzk3NUZFNUFDQV85NWRlM2IzMC1iMTU4LTRjNjUtYjFmNS1lOWYxZDM0Y2RlNjkiDQp9"
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDcyODU5QkJGLUY2OTctNEY0Ri05MTU1LUYyQkIzODhCRTI4MF9kM2MxM2VlOC1hOWU1LTQzNGItYjNkNy01YjM2NGVlMzk1YmMiDQp9"
 		}
 	}
 }

@@ -1,0 +1,15 @@
+{
+	"name": "RestResourceVetrano",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RestServiceVetrano",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Prática02"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}

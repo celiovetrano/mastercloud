@@ -80,7 +80,7 @@
 			},
 			"apikey": {
 				"type": "string",
-				"defaultValue": "YeLJjDMr8LFD7plQfCkbWqAJsmGHxSv3"
+				"defaultValue": "@linkedService(\"kvvetranomastercloud\").secret.polygonkey"
 			},
 			"camada_3": {
 				"type": "string"
